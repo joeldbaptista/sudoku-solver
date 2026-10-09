@@ -9,28 +9,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* bits 1 to 9 set: the candidate mask of a cell with no constraint */
-#define MASKALL 0x3fe
-
-enum {
-	N   = 9,
-	BOX = 3
-};
-
-typedef struct grid Grid;
-struct grid {
-	int v[N][N];
-};
+#include "sudoku.h"
 
 static void usage(void);
 static int readgrid(const char *path, Grid *g);
 static int validmove(const Grid *g, int r, int c, int v);
 static int validgrid(const Grid *g);
-static int numbits(int m);
-static int candidates(const Grid *g, int r, int c);
-static int bestempty(const Grid *g, int *r, int *c);
 static int solved(Grid *g);
-static void printgrid(const Grid *g);
 
 static char *argv0;
 
@@ -117,58 +102,6 @@ validgrid(const Grid *g)
 }
 
 static int
-numbits(int m)
-{
-	int n;
-
-	for (n = 0; m; m &= m - 1)
-		++n;
-	return n;
-}
-
-static int
-candidates(const Grid *g, int r, int c)
-{
-	int i, j;
-	int br, bc;
-	int m;
-
-	m = 0;
-	for (i = 0; i < N; ++i)
-		m |= (1 << g->v[r][i]) | (1 << g->v[i][c]);
-	br = r - r % BOX;
-	bc = c - c % BOX;
-	for (i = 0; i < BOX; ++i)
-		for (j = 0; j < BOX; ++j)
-			m |= 1 << g->v[br + i][bc + j];
-	return ~m & MASKALL;
-}
-
-static int
-bestempty(const Grid *g, int *r, int *c)
-{
-	int i, j;
-	int n, min;
-
-	min = N + 1;
-	for (i = 0; i < N; ++i) {
-		for (j = 0; j < N; ++j) {
-			if (g->v[i][j])
-				continue;
-			n = numbits(candidates(g, i, j));
-			if (n >= min)
-				continue;
-			min = n;
-			*r = i;
-			*c = j;
-			if (!n)
-				return 1;
-		}
-	}
-	return min <= N;
-}
-
-static int
 solved(Grid *g)
 {
 	int r, c;
@@ -186,17 +119,6 @@ solved(Grid *g)
 		g->v[r][c] = 0;
 	}
 	return 0;
-}
-
-static void
-printgrid(const Grid *g)
-{
-	int i, j;
-
-	for (i = 0; i < N; ++i)
-		for (j = 0; j < N; ++j)
-			printf("%d%c", g->v[i][j],
-			    j == N - 1 ? '\n' : ' ');
 }
 
 int
@@ -229,6 +151,6 @@ main(int argc, char *argv[])
 		fprintf(stderr, "%s: %s: no solution\n", argv0, path);
 		return 1;
 	}
-	printgrid(&g);
+	writegrid(stdout, &g);
 	return 0;
 }

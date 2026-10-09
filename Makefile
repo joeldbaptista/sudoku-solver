@@ -2,16 +2,19 @@ CC      = cc
 CFLAGS  = -std=c99 -pedantic -Wall -Wextra -Os
 LDFLAGS =
 
-BIN = main
-SRC = main.c
+BIN = main generate
+SRC = main.c generate.c sudoku.c
 OBJ = $(SRC:.c=.o)
 
 all: $(BIN)
 
-$(BIN): $(OBJ)
-	$(CC) $(LDFLAGS) -o $@ $(OBJ)
+main: main.o sudoku.o
+	$(CC) $(LDFLAGS) -o $@ main.o sudoku.o
 
-$(OBJ): $(SRC)
+generate: generate.o sudoku.o
+	$(CC) $(LDFLAGS) -o $@ generate.o sudoku.o
+
+$(OBJ): sudoku.h
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<

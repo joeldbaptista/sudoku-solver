@@ -16,6 +16,23 @@ $ ./main -i puzzle.dat
 
 The solution is printed in `stdout`.
 
+## Generating puzzles
+
+`generate` writes a new puzzle with a unique solution:
+
+```shell
+$ ./generate -o new.dat -d 50 [-s seed]
+```
+
+It fills a grid at random, then digs cells in random order ("generate and
+dig"). A dug cell stays empty only while the puzzle keeps a unique
+solution. `-d` is the number of cells to dig, from 0 to 64, since a unique
+puzzle keeps at least 17 givens. Random digging rarely gets past about 59,
+so the program gives up after 100 grids and exits 1. `-s` fixes the seed of
+`rand(3)`, so the same seed gives the same puzzle.
+
+The code shared by both programs is in `sudoku.c` and `sudoku.h`.
+
 ## Tests
 
 Run the suite with:
@@ -24,7 +41,7 @@ Run the suite with:
 $ make test
 ```
 
-Each case runs `./main` on a file under `tests/` and checks the exit status
+Each case runs `./main` or `./generate` and checks the exit status
 together with the output. A solution is checked by `tests/check.awk`, which
 verifies the rows, the columns, the boxes, and the givens, rather than
 comparing against a stored answer. Two cases are the exception: they use a
